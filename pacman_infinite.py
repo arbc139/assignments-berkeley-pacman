@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -46,7 +46,7 @@ from game import Actions
 from util import nearestPoint
 from util import manhattanDistance
 import util, layout
-import sys, types, time, random, os, urllib2
+import sys, types, time, random, os, urllib.request, urllib.error, urllib.parse
 
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
@@ -72,7 +72,7 @@ class GameState:
     ####################################################
 
     # static variable keeps track of which states have had getLegalActions called
-    
+
     univ_id = ''
     password = ''
     explored = set()
@@ -292,11 +292,11 @@ class ClassicGameRules:
         if state.isLose(): self.lose(state, game)
 
     def win( self, state, game ):
-        if not self.quiet: print "Pacman emerges victorious! Score: %d" % state.data.score
+        if not self.quiet: print("Pacman emerges victorious! Score: %d" % state.data.score)
         game.gameOver = True
 
     def lose( self, state, game ):
-        if not self.quiet: print "Pacman died! Score: %d" % state.data.score
+        if not self.quiet: print("Pacman died! Score: %d" % state.data.score)
         game.gameOver = True
 
     def getProgress(self, game):
@@ -304,9 +304,9 @@ class ClassicGameRules:
 
     def agentCrash(self, game, agentIndex):
         if agentIndex == 0:
-            print "Pacman crashed"
+            print("Pacman crashed")
         else:
-            print "A ghost crashed"
+            print("A ghost crashed")
 
     def getMaxTotalTime(self, agentIndex):
         return self.timeout
@@ -544,7 +544,7 @@ def readCommand( argv ):
     noKeyboard = options.gameToReplay == None and (options.textGraphics or options.quietGraphics)
     pacmanType = loadAgent(options.pacman, noKeyboard)
     agentOpts = parseAgentArgs(options.agentArgs)
-    
+
     if options.numTraining > 0:
         args['numTraining'] = options.numTraining
         if 'numTraining' not in agentOpts: agentOpts['numTraining'] = options.numTraining
@@ -579,10 +579,10 @@ def readCommand( argv ):
 
     # Special case: recorded games don't use the runGames method or args structure
     if options.gameToReplay != None:
-        print 'Replaying recorded game %s.' % options.gameToReplay
-        import cPickle
+        print('Replaying recorded game %s.' % options.gameToReplay)
+        import pickle
         f = open(options.gameToReplay)
-        try: recorded = cPickle.load(f)
+        try: recorded = pickle.load(f)
         finally: f.close()
         recorded['display'] = args['display']
         replayGame(**recorded)
@@ -637,30 +637,31 @@ def submitToServer(score, uid, pwd):
     try:
         url = urlSudoku + 'pacman_test.php?'
         url += 'uid=' + str(uid) + '&pw=' + str(pwd) + '&cnt=' + str(score)
-        resp = urllib2.urlopen(url)
+        resp = urllib.request.urlopen(url)
         contents = resp.read()
-    except urllib2.HTTPError as error:
+    except urllib.error.HTTPError as error:
         contents = error.read()
 
     return contents
-    
+
 def submitScore(score, univ_id, password):
+    print(univ_id, password)
     request=submitToServer(score, univ_id, password)
-    message=request.split(',')
+    message=request.split(b',')
     if int(message[0]) == 100:
-        print 'Try to submit in 10 min!'
+        print('Try to submit in 10 min!')
     elif int(message[0]) == 101:
-        print 'You already submitted a better result.'
-        print 'Current Ranking: ', message[1], '/', message[2]
-        print 'Your Best Score: ', message[3]
+        print('You already submitted a better result.')
+        print('Current Ranking: ', message[1], '/', message[2])
+        print('Your Best Score: ', message[3])
     elif int(message[0]) == 102:
-        print 'Submitted successfully!'
-        print 'Current Ranking: ', message[1], '/', message[2]
-        print 'Your Best Score: ', message[3]
+        print('Submitted successfully!')
+        print('Current Ranking: ', message[1], '/', message[2])
+        print('Your Best Score: ', message[3])
     elif int(message[0]) == 501:
-        print 'Wrong user name or password!'
+        print('Wrong user name or password!')
     else:
-        print 'Something wrong... Try again later.'
+        print('Something wrong... Try again later.')
 
 def runGames( layoutName, layout, pacman, ghosts, display, numGames, record, pacmanAgent, numTraining = 0, catchExceptions=False, timeout=30 ):
     import __main__
@@ -684,11 +685,11 @@ def runGames( layoutName, layout, pacman, ghosts, display, numGames, record, pac
         if not beQuiet: games.append(game)
 
         if record:
-            import time, cPickle
+            import time, pickle
             fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
             f = file(fname, 'w')
             components = {'layout': layout, 'actions': game.moveHistory}
-            cPickle.dump(components, f)
+            pickle.dump(components, f)
             f.close()
 
     if (numGames-numTraining) > 0:
@@ -696,29 +697,29 @@ def runGames( layoutName, layout, pacman, ghosts, display, numGames, record, pac
         wins = [game.state.isWin() for game in games]
         winRate = wins.count(True)/ float(len(wins))
         avgScore = sum(scores) / float(len(scores))
-        print '-------------------------------------------'
-        print 'Average Score:', avgScore
-        print 'Scores:       ', ', '.join([str(score) for score in scores])
-        print 'Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate)
-        print 'Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins])
-        print '-------------------------------------------'
+        print('-------------------------------------------')
+        print('Average Score:', avgScore)
+        print('Scores:       ', ', '.join([str(score) for score in scores]))
+        print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+        print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
+        print('-------------------------------------------')
 
         if numTraining == 50 and numGames == 60 and pacmanAgent == 'ApproximateQAgent' and layoutName =='mediumClassic':
-            if avgScore <= float(open('score.txt', 'r').read()):
+            previousScore = float(open('score.txt', 'r').read())
+            print('Previous Score: ', previousScore)
+
+            if avgScore <= previousScore:
                 return -1
+            
+            import time
+            time.sleep(610)
 
             with open('score.txt', 'w') as f:
                 f.write(str(avgScore))
 
-            while (True):
-                inputVar = 'y'
-                if inputVar == 'y':
-                    submitScore(avgScore, game.state.univ_id, game.state.password)
-                    break;
-                elif inputVar == 'n':
-                    break;
+            submitScore(avgScore, game.state.univ_id, game.state.password)
         else:
-            print 'Possible to submit only at numTraining=50, numGames=60, agent=ApproximateQAgent, and layout=mediumClassic'
+            print('Possible to submit only at numTraining=50, numGames=60, agent=ApproximateQAgent, and layout=mediumClassic')
 
     return games
 
@@ -734,11 +735,9 @@ if __name__ == '__main__':
     > python pacman.py --help
     """
     args = readCommand( sys.argv[1:] ) # Get game components based on input
-    
     if runGames( **args ) == -1:
         os.execl(sys.executable, sys.executable, *sys.argv)
-        # os.system('python pacman_infinite.py -p ApproximateQAgent -a extractor=CustomExtractor -x 50 -n 60 -l mediumClassic -q')
-    
+
     # import cProfile
     # cProfile.run("runGames( **args )")
     pass
